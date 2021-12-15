@@ -54,7 +54,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
 
 
 def test(model, device, test_loader):
-    model.eval_onnx(tuple(next(iter(test_loader))[:-1]))
+    model.eval_onnx(test_loader)
     test_loss = 0
     correct = 0
     with torch.no_grad():
@@ -64,7 +64,6 @@ def test(model, device, test_loader):
             test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
-    model.exit_onnx()
 
     test_loss /= len(test_loader.dataset)
 
@@ -125,7 +124,7 @@ def main():
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-    model = Trainer.compile(model, nn.NLLLoss(), optimizer, onnx=True)
+    model = Trainer.compile(model, onnx=True)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
