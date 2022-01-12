@@ -8,6 +8,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+from bigdl.nano.pytorch.trainer import Trainer
 
 class Net(nn.Module):
     def __init__(self):
@@ -53,7 +54,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
 
 
 def test(model, device, test_loader):
-    model.eval()
+    model.eval(quantize=True)
     test_loss = 0
     correct = 0
     with torch.no_grad():
@@ -123,10 +124,13 @@ def main():
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    trainer = Trainer()
+    model = trainer.compile(model, onnx=True)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
+        model = trainer.quantize(model, train_loader)
         test(model, device, test_loader)
         scheduler.step()
 
