@@ -125,7 +125,6 @@ def main():
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
     trainer = Trainer()
-    model = trainer.compile(model, onnx=True)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
